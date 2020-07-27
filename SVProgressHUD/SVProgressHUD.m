@@ -68,7 +68,7 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 {
     static dispatch_once_t once;
     
-    UIWindow* window = UIApplication.sharedApplication.windows.lastObject;
+    UIWindow* window = [SVProgressHUD frontWindow];
     
     static SVProgressHUD* sharedView;
 #if !defined(SV_APP_EXTENSIONS)
@@ -654,13 +654,13 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     double animationDuration = 0.0;
 
 #if !defined(SV_APP_EXTENSIONS) && TARGET_OS_IOS
-    UIWindow* window = UIApplication.sharedApplication.windows.lastObject;
+    UIWindow* window = [SVProgressHUD frontWindow];
     
     self.frame = window.bounds;
     
     UIInterfaceOrientation orientation = UIApplication.sharedApplication.statusBarOrientation;
 #elif !defined(SV_APP_EXTENSIONS) && !TARGET_OS_IOS
-    UIWindow* window = UIApplication.sharedApplication.windows.lastObject;
+    UIWindow* window = [SVProgressHUD frontWindow];
     
     self.frame = window.bounds;
 #else
@@ -1232,7 +1232,7 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     
     // Update frames
 #if !defined(SV_APP_EXTENSIONS)
-    UIWindow* window = UIApplication.sharedApplication.windows.lastObject;
+    UIWindow* window = [SVProgressHUD frontWindow];
 
     CGRect windowBounds = window.bounds;
     
@@ -1379,21 +1379,82 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     return 0;
 }
     
-- (UIWindow *)frontWindow {
+- (UIWindow*) frontWindow
+{
 #if !defined(SV_APP_EXTENSIONS)
-    NSEnumerator *frontToBackWindows = [UIApplication.sharedApplication.windows reverseObjectEnumerator];
-    for (UIWindow *window in frontToBackWindows) {
-        BOOL windowOnMainScreen = window.screen == UIScreen.mainScreen;
-        BOOL windowIsVisible = !window.hidden && window.alpha > 0;
-        BOOL windowLevelSupported = (window.windowLevel >= UIWindowLevelNormal && window.windowLevel <= self.maxSupportedWindowLevel);
-        BOOL windowKeyWindow = window.isKeyWindow;
-			
-        if(windowOnMainScreen && windowIsVisible && windowLevelSupported && windowKeyWindow) {
+    
+    if ( @available(iOS 13.0, *) )
+    {
+        if ( UIApplication.sharedApplication.supportsMultipleScenes == YES )
+        {
+            return [SVProgressHUD frontWindow];
+        }
+    }
+    
+    NSEnumerator* frontToBackWindows = [UIApplication.sharedApplication.windows objectEnumerator];
+    
+    for ( UIWindow* window in frontToBackWindows )
+    {
+        BOOL windowOnMainScreen   = window.screen == UIScreen.mainScreen;
+        BOOL windowIsVisible      = !window.hidden && window.alpha > 0;
+        BOOL windowLevelSupported = (window.windowLevel >= UIWindowLevelNormal && window.windowLevel <= UIWindowLevelNormal);
+        BOOL windowKeyWindow      = window.isKeyWindow;
+
+        if( windowOnMainScreen && windowIsVisible && windowLevelSupported && windowKeyWindow )
+        {
             return window;
         }
     }
 #endif
     return nil;
+}
+
++ (UIWindow*) frontWindow
+{
+    if ( @available(iOS 13.0, *) )
+    {
+        if ( UIApplication.sharedApplication.supportsMultipleScenes == YES )
+        {
+            __block NSMutableArray<UIWindow*>* connectedWindows = [NSMutableArray new];
+            
+            UIApplication* application = [UIApplication sharedApplication];
+            
+            [application.connectedScenes.allObjects enumerateObjectsUsingBlock: ^(UIScene * _Nonnull scene, NSUInteger idx, BOOL * _Nonnull stop) {
+                
+                if ( [scene.delegate conformsToProtocol: @protocol(UIWindowSceneDelegate)] )
+                {
+                    if ( scene.activationState == UISceneActivationStateForegroundActive ||
+                         scene.activationState == UISceneActivationStateForegroundInactive )
+                    {
+                        UIWindow* window = [(id <UIWindowSceneDelegate>)scene.delegate window];
+                        
+                        [connectedWindows addObject: window];
+                    }
+                }
+            }];
+            
+            if ( connectedWindows.count == 1 )
+                return connectedWindows.firstObject;
+            
+            for ( NSInteger i = UIApplication.sharedApplication.windows.count - 1; i >= 0; i-- )
+            {
+                UIWindow* window = UIApplication.sharedApplication.windows[i];
+                
+                BOOL isWindowConnected    = [connectedWindows containsObject: window];
+                BOOL windowOnMainScreen   = window.screen == UIScreen.mainScreen;
+                BOOL windowIsVisible      = !window.hidden && window.alpha > 0;
+                BOOL windowLevelSupported = (window.windowLevel >= UIWindowLevelNormal && window.windowLevel <= UIWindowLevelNormal);
+                BOOL windowKeyWindow      = window.isKeyWindow == NO;
+                
+                if ( isWindowConnected && windowOnMainScreen && windowIsVisible && windowLevelSupported && windowKeyWindow )
+                {
+                    return window;
+                }
+            }
+        }
+    }
+    
+    return UIApplication.sharedApplication.windows.firstObject;
 }
     
 - (void)fadeInEffects {
