@@ -658,7 +658,7 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     
     self.frame = window.bounds;
     
-    UIInterfaceOrientation orientation = application.statusBarOrientation;
+    UIInterfaceOrientation orientation = UIApplication.sharedApplication.statusBarOrientation;
 #elif !defined(SV_APP_EXTENSIONS) && !TARGET_OS_IOS
     UIWindow* window = UIApplication.sharedApplication.windows.lastObject;
     
