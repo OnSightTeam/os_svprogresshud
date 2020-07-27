@@ -68,20 +68,7 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
 {
     static dispatch_once_t once;
     
-    UIWindow* window;
-    
-    UIApplication* application = [UIApplication sharedApplication];
-    
-    UIScene* scene = application.connectedScenes.allObjects.firstObject;
-    
-    if ( [scene.delegate conformsToProtocol: @protocol(UIWindowSceneDelegate)] )
-    {
-        window = [(id <UIWindowSceneDelegate>)scene.delegate window];
-    }
-    else
-    {
-        window = application.delegate.window;
-    }
+    UIWindow* window = UIApplication.sharedApplication.windows.lastObject;
     
     static SVProgressHUD* sharedView;
 #if !defined(SV_APP_EXTENSIONS)
@@ -667,39 +654,13 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     double animationDuration = 0.0;
 
 #if !defined(SV_APP_EXTENSIONS) && TARGET_OS_IOS
-    UIWindow* window;
-    
-    UIApplication* application = [UIApplication sharedApplication];
-    
-    UIScene* scene = application.connectedScenes.allObjects.firstObject;
-    
-    if ( [scene.delegate conformsToProtocol:@protocol(UIWindowSceneDelegate)] )
-    {
-        window = [(id <UIWindowSceneDelegate>)scene.delegate window];
-    }
-    else
-    {
-        window = application.delegate.window;
-    }
+    UIWindow* window = UIApplication.sharedApplication.windows.lastObject;
     
     self.frame = window.bounds;
     
     UIInterfaceOrientation orientation = application.statusBarOrientation;
 #elif !defined(SV_APP_EXTENSIONS) && !TARGET_OS_IOS
-    UIWindow* window;
-    
-    UIApplication* application = [UIApplication sharedApplication];
-    
-    UIScene* scene = application.connectedScenes.allObjects.firstObject;
-    
-    if ( [scene.delegate conformsToProtocol:@protocol(UIWindowSceneDelegate)] )
-    {
-        window = [(id<UIWindowSceneDelegate>)scene.delegate window];
-    }
-    else
-    {
-        window = application.delegate.window;
-    }
+    UIWindow* window = UIApplication.sharedApplication.windows.lastObject;
     
     self.frame = window.bounds;
 #else
@@ -1271,21 +1232,7 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
     
     // Update frames
 #if !defined(SV_APP_EXTENSIONS)
-    
-    UIWindow* window;
-    
-    UIApplication* application = [UIApplication sharedApplication];
-    
-    UIScene* scene = application.connectedScenes.allObjects.firstObject;
-    
-    if ( [scene.delegate conformsToProtocol: @protocol(UIWindowSceneDelegate)] )
-    {
-        window = [(id<UIWindowSceneDelegate>)scene.delegate window];
-    }
-    else
-    {
-        window = application.delegate.window;
-    }
+    UIWindow* window = UIApplication.sharedApplication.windows.lastObject;
 
     CGRect windowBounds = window.bounds;
     
