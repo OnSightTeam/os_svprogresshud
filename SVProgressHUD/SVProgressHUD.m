@@ -1444,7 +1444,7 @@ static const CGFloat SVProgressHUDLabelSpacing = 8.0f;
                 BOOL windowOnMainScreen   = window.screen == UIScreen.mainScreen;
                 BOOL windowIsVisible      = !window.hidden && window.alpha > 0;
                 BOOL windowLevelSupported = (window.windowLevel >= UIWindowLevelNormal && window.windowLevel <= UIWindowLevelNormal);
-                BOOL windowKeyWindow      = window.isKeyWindow == NO;
+                BOOL windowKeyWindow      = window.isKeyWindow;
                 
                 if ( isWindowConnected && windowOnMainScreen && windowIsVisible && windowLevelSupported && windowKeyWindow )
                 {
